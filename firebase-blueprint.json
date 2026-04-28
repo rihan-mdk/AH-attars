@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email", "description": "User's email address" },
+        "displayName": { "type": "string", "description": "User's full name" },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "User's role in the application" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user account was created" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Fragrance product information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique product ID" },
+        "name": { "type": "string", "description": "Name of the fragrance" },
+        "description": { "type": "string", "description": "Detailed description of the scent" },
+        "price": { "type": "number", "description": "Price of the product" },
+        "category": { "type": "string", "description": "Product category (e.g., Floral, Woody)" },
+        "image": { "type": "string", "description": "URL to the product image" },
+        "stock": { "type": "integer", "description": "Available quantity" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the product was added" }
+      },
+      "required": ["name", "price", "category"]
+    },
+    "Subscriber": {
+      "title": "Subscriber",
+      "description": "Newsletter subscriber email",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email", "description": "Subscriber's email address" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user subscribed" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Product review and rating",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique review ID" },
+        "productId": { "type": "string", "description": "ID of the product being reviewed" },
+        "userId": { "type": "string", "description": "ID of the user who wrote the review" },
+        "userName": { "type": "string", "description": "Name of the user who wrote the review" },
+        "rating": { "type": "integer", "description": "Rating from 1 to 5" },
+        "comment": { "type": "string", "description": "Review text" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the review was created" }
+      },
+      "required": ["productId", "userId", "userName", "rating", "comment", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection of fragrance products"
+    },
+    "/subscribers/{subscriberId}": {
+      "schema": "Subscriber",
+      "description": "Collection of newsletter subscribers"
+    },
+    "/products/{productId}/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Subcollection of product reviews"
+    }
+  }
+}

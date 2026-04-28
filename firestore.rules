@@ -1,0 +1,151 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId} (Firebase Auth UID)
+    // Fields:
+    //   - uid: string (required) - Firebase Auth UID
+    //   - email: string (required, email format) - User's email address
+    //   - displayName: string (optional) - User's full name
+    //   - role: string (required, enum: ['admin', 'user']) - User's role
+    //   - createdAt: timestamp (required) - When the account was created
+    //
+    // Collection: products
+    // Document ID: {productId}
+    // Fields:
+    //   - name: string (required) - Product name
+    //   - price: number (required, positive) - Product price
+    //   - category: string (required) - Product category
+    //   - description: string (optional) - Product description
+    //   - longDescription: string (optional) - Detailed product description
+    //   - image: string (optional, url format) - Primary product image URL
+    //   - images: list (optional) - Array of product image URLs
+    //   - notes: list (optional) - Array of scent notes
+    //   - stock: number (optional, integer) - Available stock
+    //   - featured: boolean (optional) - Whether the product is featured
+    //   - createdAt: timestamp (required) - When the product was added
+    //
+    // Collection: subscribers
+    // Document ID: {subscriberId}
+    // Fields:
+    //   - email: string (required, email format) - Subscriber's email address
+    //   - createdAt: timestamp (required) - When the user subscribed
+    //
+    // Collection: products/{productId}/reviews
+    // Document ID: {reviewId}
+    // Fields:
+    //   - productId: string (required) - ID of the product
+    //   - userId: string (required) - ID of the user
+    //   - userName: string (required) - Name of the user
+    //   - rating: number (required, 1-5) - Rating
+    //   - comment: string (required) - Review text
+    //   - createdAt: timestamp (required) - When the review was created
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+          request.auth.uid == "A7SzLUHdxdTYyBhPYbphJezmCe42" ||
+          request.auth.token.email == "admin286@gmail.com");
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*") || url.matches("^data:image/.*"));
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'role', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             data.role in ['admin', 'user'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidProduct(data) {
+      return data.name is string && data.name.size() > 0 &&
+             data.price is number && data.price > 0 &&
+             data.category is string;
+    }
+
+    function isValidSubscriber(data) {
+      return hasOnlyAllowedFields(['email', 'createdAt']) &&
+             isValidEmail(data.email) &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidReview(data) {
+      return hasOnlyAllowedFields(['id', 'productId', 'userId', 'userName', 'rating', 'comment', 'createdAt']) &&
+             data.productId is string &&
+             data.userId == request.auth.uid &&
+             data.userName is string && data.userName.size() > 0 &&
+             data.rating is int && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() > 0 && data.comment.size() < 2000 &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+    
+    match /orders/{orderId} {
+      allow read: if request.auth != null && (request.auth.token.email == "admin286@gmail.com" || resource.data.userId == request.auth.uid);
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && request.auth.token.email == "admin286@gmail.com";
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'user' || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidProduct(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /subscribers/{subscriberId} {
+      allow read: if isAdmin();
+      allow create: if isValidSubscriber(request.resource.data);
+      allow update, delete: if isAdmin();
+    }
+
+    match /products/{productId}/reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isValidReview(request.resource.data);
+      allow update, delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+    }
+  }
+}
