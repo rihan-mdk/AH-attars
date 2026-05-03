@@ -204,7 +204,21 @@ const ProductDetails = () => {
             <p className="text-xs uppercase tracking-[0.3em] text-brand-subtext font-bold">{product.category}</p>
             <h1 className="text-5xl md:text-6xl font-serif text-brand-text leading-tight">{product.name}</h1>
             <div className="flex items-center space-x-4">
-              <p className="text-3xl font-light text-brand-text">{formatPrice(currentPrice)}</p>
+              <div className="flex flex-col">
+                <motion.p 
+                  key={currentPrice * quantity}
+                  initial={{ opacity: 0.5, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-3xl font-light text-brand-text"
+                >
+                  {formatPrice(currentPrice * quantity)}
+                </motion.p>
+                {quantity > 1 && (
+                  <p className="text-[10px] uppercase tracking-widest text-brand-subtext font-bold mt-1">
+                    {formatPrice(currentPrice)} each
+                  </p>
+                )}
+              </div>
               {averageRating && (
                 <div className="flex items-center space-x-1 bg-brand-accent/10 px-3 py-1 rounded-full">
                   <Star size={14} className="fill-brand-button text-brand-button" />

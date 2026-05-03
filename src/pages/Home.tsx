@@ -41,7 +41,7 @@ const Home = () => {
     })
   };
 
-  const swipeConfidenceThreshold = 10000;
+  const swipeConfidenceThreshold = 1000;
   const swipePower = (offset: number, velocity: number) => {
     return Math.abs(offset) * velocity;
   };
@@ -97,6 +97,26 @@ const Home = () => {
         createdAt: serverTimestamp()
       });
 
+      // Send to Web3Forms for email notification
+      try {
+        await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            access_key: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY,
+            email: email.toLowerCase(),
+            subject: "New Newsletter Subscription - AH attars",
+            from_name: "AH attars Website",
+            message: `A new user has subscribed to the newsletter: ${email.toLowerCase()}`,
+          }),
+        });
+      } catch (err) {
+        console.error('Web3Forms notification failed:', err);
+      }
+
       setSubscribed(true);
       setEmail('');
     } catch (err) {
@@ -111,21 +131,8 @@ const Home = () => {
     <div className="space-y-16 md:space-y-24 pb-12 md:pb-24">
       {/* Hero Section */}
       <section className="relative min-h-[90vh] md:h-[90vh] flex items-center overflow-hidden pt-16 md:pt-0 pb-12 md:pb-0 bg-brand-bg">
-        {/* Navigation Arrows */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-12 z-30 pointer-events-none">
-          <button
-            onClick={() => paginate(-1)}
-            className="p-3 md:p-4 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-brand-text hover:bg-white transition-all hover:scale-110 pointer-events-auto shadow-lg"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button
-            onClick={() => paginate(1)}
-            className="p-3 md:p-4 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-brand-text hover:bg-white transition-all hover:scale-110 pointer-events-auto shadow-lg"
-          >
-            <ChevronRight size={24} />
-          </button>
-        </div>
+        {/* Navigation Arrows Removed for Clean Mobile Look - Use Swipe instead */}
+
 
         <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 md:space-y-8 z-10 text-center md:text-left order-2 md:order-1">

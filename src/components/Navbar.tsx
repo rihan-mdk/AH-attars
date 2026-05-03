@@ -268,8 +268,16 @@ const Navbar = () => {
                 </AnimatePresence>
                 <button
                   ref={searchButtonRef}
+                  onMouseEnter={() => {
+                    if (!showSearch) {
+                      clearHover();
+                      hoverTimeoutRef.current = setTimeout(() => setShowSearch(true), 400);
+                    }
+                  }}
+                  onMouseLeave={clearHover}
                   onClick={(e) => {
                     e.stopPropagation();
+                    clearHover();
                     handleSearchToggle(false);
                   }}
                   className="text-brand-text hover:text-brand-subtext transition-colors"

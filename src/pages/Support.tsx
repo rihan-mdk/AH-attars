@@ -6,14 +6,39 @@ import { cn } from '../lib/utils';
 const Support = () => {
   const [formState, setFormState] = useState({ firstName: '', lastName: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormState({ firstName: '', lastName: '', email: '', message: '' });
-    }, 3000);
+    setSubmitting(true);
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY,
+          name: `${formState.firstName} ${formState.lastName}`,
+          email: formState.email,
+          message: formState.message,
+          subject: `Support Request from ${formState.firstName}`,
+          from_name: "AH attars Support",
+        }),
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+        setFormState({ firstName: '', lastName: '', email: '', message: '' });
+        setTimeout(() => setSubmitted(false), 5000);
+      }
+    } catch (err) {
+      console.error('Support form submission failed:', err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -149,13 +174,16 @@ const Support = () => {
           ></textarea>
           <button 
             type="submit"
-            disabled={submitted}
+            disabled={submitting || submitted}
             className={cn(
               "w-full py-4 rounded-full text-xs font-bold uppercase tracking-widest transition-all shadow-lg flex items-center justify-center space-x-2",
-              submitted ? "bg-green-600 text-white" : "bg-brand-button text-white hover:bg-black"
+              submitted ? "bg-green-600 text-white" : "bg-brand-button text-white hover:bg-black",
+              submitting && "opacity-50 cursor-not-allowed"
             )}
           >
-            {submitted ? (
+            {submitting ? (
+              <span>Sending...</span>
+            ) : submitted ? (
               <>
                 <CheckCircle2 size={18} />
                 <span>Message Sent</span>
