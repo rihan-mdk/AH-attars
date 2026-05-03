@@ -8,11 +8,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { updateProfile, updateEmail, updatePassword, signOut } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
+import { cn } from '../lib/utils';
 
 const Profile = () => {
   const { user, profile } = useAuth();
   const { orders } = useOrders();
-  const { formatPrice } = useCurrency();
+  const { currency, setCurrency, allCurrencies, formatPrice } = useCurrency();
   const navigate = useNavigate();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -89,7 +90,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 md:py-20 space-y-12">
+    <div className="max-w-4xl mx-auto px-4 pt-16 md:pt-20 pb-10 md:pb-20 space-y-12">
       <div className="flex justify-between items-center">
         <Link 
           to="/" 
@@ -307,6 +308,29 @@ const Profile = () => {
                     </div>
                     <ChevronRight size={18} className="text-brand-subtext" />
                   </Link>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-xl font-serif text-brand-text">Preferences</h3>
+                <div className="bg-white rounded-[32px] border border-brand-accent/10 shadow-sm p-6 space-y-4">
+                  <p className="text-[10px] uppercase tracking-widest text-brand-subtext font-bold">Preferred Currency</p>
+                  <div className="flex bg-brand-bg/50 backdrop-blur-sm rounded-full p-1 border border-brand-accent/10 w-fit">
+                    {allCurrencies.map((c) => (
+                      <button
+                        key={c.code}
+                        onClick={() => setCurrency(c.code as any)}
+                        className={cn(
+                          "px-6 py-2 text-[10px] font-bold rounded-full transition-all duration-300",
+                          currency.code === c.code
+                            ? "bg-brand-button text-white shadow-sm"
+                            : "text-brand-text/40 hover:text-brand-text"
+                        )}
+                      >
+                        {c.code}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 

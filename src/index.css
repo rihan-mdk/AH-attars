@@ -12,11 +12,16 @@
   --color-brand-text: #2C2C2C;
   --color-brand-subtext: #6F6A63;
   --color-brand-button: #2F2F2F;
+
+  /* Safe Area Variables for iOS */
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
 }
 
 @layer base {
   body {
     @apply bg-brand-bg text-brand-text font-sans antialiased;
+    padding-bottom: var(--safe-bottom);
   }
 
   h1, h2, h3, h4, h5, h6 {

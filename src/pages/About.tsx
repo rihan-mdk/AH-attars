@@ -15,7 +15,7 @@ const About = () => {
   };
 
   return (
-    <div className="pb-24 pt-32">
+    <div className="pb-24 pt-16 md:pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <Link
           to="/"
@@ -29,7 +29,7 @@ const About = () => {
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1590736704728-f4730bb30770?auto=format&fit=crop&q=80&w=2000"
+            src="/images/about-hero.png"
             alt="About Background"
             className="w-full h-full object-cover opacity-40"
             referrerPolicy="no-referrer"
@@ -67,7 +67,7 @@ const About = () => {
           <div className="relative">
             <div className="absolute -top-12 -left-12 w-64 h-64 bg-brand-accent/20 rounded-full blur-3xl -z-10"></div>
             <img
-              src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&q=80&w=1000"
+              src="/images/about-secondary.png"
               alt="Founder"
               className="rounded-[40px] shadow-2xl"
               referrerPolicy="no-referrer"
@@ -77,7 +77,7 @@ const About = () => {
       </section>
 
       {/* Values */}
-      <section className="bg-brand-section py-24">
+      <section id="sustainability" className="bg-brand-section py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 space-y-4">
             <p className="text-xs uppercase tracking-[0.3em] text-brand-subtext font-bold">Our Values</p>
@@ -119,7 +119,7 @@ const About = () => {
             </div>
 
             <div className="space-y-6">
-              <motion.div 
+              <motion.div
                 whileHover={{ x: 10, scale: 1.02 }}
                 className="flex items-start space-x-6 p-4 rounded-3xl transition-all hover:bg-white/40 hover:shadow-md group"
               >
@@ -128,11 +128,11 @@ const About = () => {
                 </div>
                 <div>
                   <h4 className="font-bold uppercase tracking-widest text-sm mb-1">Our Studio</h4>
-                  <p className="text-brand-subtext">12 Rue de la Paix, 75002 Paris, France</p>
+                  <p className="text-brand-subtext">Laadi, Moodbidri, Karnataka, India</p>
                 </div>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 whileHover={{ x: 10, scale: 1.02 }}
                 className="flex items-start space-x-6 p-4 rounded-3xl transition-all hover:bg-white/40 hover:shadow-md group"
               >
@@ -141,11 +141,11 @@ const About = () => {
                 </div>
                 <div>
                   <h4 className="font-bold uppercase tracking-widest text-sm mb-1">Call Us</h4>
-                  <p className="text-brand-subtext">+33 (0) 1 23 45 67 89</p>
+                  <p className="text-brand-subtext">+91 7259960812</p>
                 </div>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 whileHover={{ x: 10, scale: 1.02 }}
                 className="flex items-start space-x-6 p-4 rounded-3xl transition-all hover:bg-white/40 hover:shadow-md group"
               >
@@ -154,7 +154,7 @@ const About = () => {
                 </div>
                 <div>
                   <h4 className="font-bold uppercase tracking-widest text-sm mb-1">Email Us</h4>
-                  <p className="text-brand-subtext">concierge@ahattars.com</p>
+                  <p className="text-brand-subtext">ahattars812@gmail.com</p>
                 </div>
               </motion.div>
             </div>
@@ -162,10 +162,20 @@ const About = () => {
             <div className="pt-12">
               <h4 className="font-bold uppercase tracking-widest text-sm mb-6">Follow Our Journey</h4>
               <div className="flex space-x-6">
-                <a href="#" className="flex items-center justify-center bg-brand-accent/20 p-4 rounded-2xl text-brand-text hover:bg-brand-button hover:text-white transition-all shadow-sm group">
+                <a
+                  href="https://instagram.com/ah_attars"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center bg-brand-accent/20 p-4 rounded-2xl text-brand-text hover:bg-brand-button hover:text-white transition-all shadow-sm group"
+                >
                   <Instagram size={24} />
                 </a>
-                <a href="#" className="flex items-center justify-center bg-brand-accent/20 p-4 rounded-2xl text-brand-text hover:bg-brand-button hover:text-white transition-all shadow-sm group">
+                <a
+                  href="https://wa.me/7259960812"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center bg-brand-accent/20 p-4 rounded-2xl text-brand-text hover:bg-brand-button hover:text-white transition-all shadow-sm group"
+                >
                   <MessageCircle size={24} />
                 </a>
               </div>
@@ -214,9 +224,8 @@ const About = () => {
               <button
                 type="submit"
                 disabled={submitted}
-                className={`w-full py-5 rounded-full text-sm font-bold tracking-widest uppercase flex items-center justify-center space-x-3 transition-all shadow-lg ${
-                  submitted ? 'bg-green-600 text-white' : 'bg-brand-button text-white hover:bg-black hover:scale-[1.02]'
-                }`}
+                className={`w-full py-5 rounded-full text-sm font-bold tracking-widest uppercase flex items-center justify-center space-x-3 transition-all shadow-lg ${submitted ? 'bg-green-600 text-white' : 'bg-brand-button text-white hover:bg-black hover:scale-[1.02]'
+                  }`}
               >
                 {submitted ? (
                   <span>Message Sent</span>

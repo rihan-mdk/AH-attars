@@ -37,6 +37,34 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('aura_currency', code);
   };
 
+  useEffect(() => {
+    const detectCurrency = async () => {
+      // Only auto-detect if user hasn't manually set a preference
+      if (localStorage.getItem('aura_currency')) return;
+
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        
+        if (data.currency && CURRENCIES[data.currency as CurrencyCode]) {
+          setCurrency(data.currency as CurrencyCode);
+        } else if (data.country_code === 'IN') {
+          setCurrency('INR');
+        } else if (data.country_code === 'AE') {
+          setCurrency('AED');
+        } else if (data.country_code === 'GB') {
+          setCurrency('GBP');
+        } else if (['FR', 'DE', 'IT', 'ES', 'NL', 'BE'].includes(data.country_code)) {
+          setCurrency('EUR');
+        }
+      } catch (error) {
+        console.error('Currency detection failed:', error);
+      }
+    };
+
+    detectCurrency();
+  }, []);
+
   const formatPrice = (priceUSD: number) => {
     const converted = priceUSD * currency.rate;
     return `${currency.symbol}${converted.toLocaleString(undefined, {

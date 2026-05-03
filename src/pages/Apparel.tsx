@@ -17,22 +17,24 @@ const Apparel = () => {
     );
   }
 
-  const apparelProducts = products
-    .filter(p => p.category === 'Apparel')
+  const apparelProducts = (products || [])
+    .filter(p => p && p.category === 'Apparel')
     .sort((a, b) => {
-      if (sortBy === 'price-low') return a.price - b.price;
-      if (sortBy === 'price-high') return b.price - a.price;
+      const priceA = a.price || 0;
+      const priceB = b.price || 0;
+      if (sortBy === 'price-low') return priceA - priceB;
+      if (sortBy === 'price-high') return priceB - priceA;
       if (sortBy === 'featured') {
         const aFeatured = a.featured ? 1 : 0;
         const bFeatured = b.featured ? 1 : 0;
         if (aFeatured !== bFeatured) return bFeatured - aFeatured;
-        return a.name.localeCompare(b.name);
+        return (a.name || '').localeCompare(b.name || '');
       }
       return 0;
     });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-10 md:py-20 space-y-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 md:pt-20 pb-10 md:pb-20 space-y-12">
       <Link
         to="/"
         className="inline-flex items-center space-x-2 text-brand-subtext hover:text-brand-text transition-colors mb-4"
@@ -70,7 +72,6 @@ const Apparel = () => {
 
       {/* Grid */}
       <motion.div
-        layout
         className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-12"
       >
         {apparelProducts.map((product) => (

@@ -126,7 +126,7 @@ const Cart = () => {
 
   if (cart.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 pt-32 pb-32 text-center space-y-8">
+      <div className="max-w-7xl mx-auto px-4 pt-16 md:pt-20 pb-32 text-center space-y-8">
         <Link
           to="/"
           className="inline-flex items-center space-x-2 text-brand-subtext hover:text-brand-text transition-colors mb-12"
@@ -156,7 +156,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 md:pt-20 pb-20">
       <button
         onClick={() => navigate(-1)}
         className="flex items-center space-x-2 text-brand-subtext hover:text-brand-text transition-colors mb-12"
@@ -171,7 +171,7 @@ const Cart = () => {
           <AnimatePresence mode="popLayout">
             {cart.map((item) => (
               <motion.div
-                key={item.id}
+                key={`${item.id}-${item.selectedSize || 'no-size'}`}
                 layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -190,6 +190,7 @@ const Cart = () => {
                   <p className="text-[10px] uppercase tracking-[0.2em] text-brand-subtext font-bold">{item.category}</p>
                   <h3 className="text-xl font-serif text-brand-text">
                     <Link to={`/product/${item.id}`}>{item.name}</Link>
+                    {item.sizeLabel && <span className="text-sm ml-2 text-brand-subtext font-sans">({item.sizeLabel})</span>}
                   </h3>
                   <p className="text-lg font-medium text-brand-text">{formatPrice(item.price)}</p>
                 </div>
@@ -197,7 +198,7 @@ const Cart = () => {
                 <div className="flex items-center space-x-6">
                   <div className="flex items-center border border-brand-accent rounded-full px-3 py-1">
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize)}
                       className="p-1 hover:text-brand-subtext transition-colors"
                       aria-label="Decrease quantity"
                     >
@@ -205,7 +206,7 @@ const Cart = () => {
                     </button>
                     <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize)}
                       className="p-1 hover:text-brand-subtext transition-colors"
                       aria-label="Increase quantity"
                     >
@@ -214,7 +215,7 @@ const Cart = () => {
                   </div>
 
                   <button
-                    onClick={() => removeFromCart(item.id)}
+                    onClick={() => removeFromCart(item.id, item.selectedSize)}
                     className="text-brand-subtext hover:text-red-500 transition-colors"
                     aria-label="Remove item"
                   >

@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (userDoc.exists()) {
             const data = userDoc.data() as UserProfile;
             // Always ensure this specific email has the admin role
-            if (firebaseUser.email === 'admin286@gmail.com' && data.role !== 'admin') {
+            if (firebaseUser.email === 'ahattars812@gmail.com' && data.role !== 'admin') {
               data.role = 'admin';
               await updateDoc(userDocRef, { role: 'admin' });
             }
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               uid: firebaseUser.uid,
               email: firebaseUser.email || '',
               displayName: firebaseUser.displayName || '',
-              role: firebaseUser.email === 'admin286@gmail.com' ? 'admin' : 'user',
+              role: firebaseUser.email === 'ahattars812@gmail.com' ? 'admin' : 'user',
               createdAt: serverTimestamp(),
             };
             await setDoc(userDocRef, newProfile);
@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     profile,
     loading,
-    isAdmin: profile?.role === 'admin' || user?.email === 'admin286@gmail.com',
+    isAdmin: profile?.role === 'admin' || user?.email === 'ahattars812@gmail.com',
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

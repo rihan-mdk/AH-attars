@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { BLOG_POSTS } from '../constants';
 import { useProducts } from '../ProductContext';
 import ProductCard from '../components/ProductCard';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { cn } from '../lib/utils';
@@ -17,15 +17,46 @@ const Home = () => {
   const [error, setError] = useState<string | null>(null);
   
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
   const featuredProducts = products.filter(p => p.featured);
   const displayProducts = featuredProducts.length > 0 ? featuredProducts : products.slice(0, 5);
+
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 500 : -500,
+      opacity: 0,
+      scale: 0.95
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+      scale: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 500 : -500,
+      opacity: 0,
+      scale: 0.95
+    })
+  };
+
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
+  };
+
+  const paginate = (newDirection: number) => {
+    setDirection(newDirection);
+    setCurrentIndex((prev) => (prev + newDirection + displayProducts.length) % displayProducts.length);
+  };
 
   React.useEffect(() => {
     if (displayProducts.length <= 1) return;
     
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
-    }, 5000); // Change every 5 seconds
+      paginate(1);
+    }, 6000); 
 
     return () => clearInterval(interval);
   }, [displayProducts.length]);
@@ -77,29 +108,48 @@ const Home = () => {
   };
 
   return (
-    <div className="space-y-12 md:space-y-24 pb-12 md:pb-24">
+    <div className="space-y-16 md:space-y-24 pb-12 md:pb-24">
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] md:h-[90vh] flex items-center overflow-hidden pt-24 md:pt-0 pb-12 md:pb-0 bg-brand-bg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <section className="relative min-h-[90vh] md:h-[90vh] flex items-center overflow-hidden pt-16 md:pt-0 pb-12 md:pb-0 bg-brand-bg">
+        {/* Navigation Arrows */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-12 z-30 pointer-events-none">
+          <button
+            onClick={() => paginate(-1)}
+            className="p-3 md:p-4 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-brand-text hover:bg-white transition-all hover:scale-110 pointer-events-auto shadow-lg"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <button
+            onClick={() => paginate(1)}
+            className="p-3 md:p-4 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-brand-text hover:bg-white transition-all hover:scale-110 pointer-events-auto shadow-lg"
+          >
+            <ChevronRight size={24} />
+          </button>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 md:space-y-8 z-10 text-center md:text-left order-2 md:order-1">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={currentHero?.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.8 }}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.4 }
+                }}
                 className="space-y-6 md:space-y-8"
               >
                 <div className="space-y-2">
                   <motion.p 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
                     className="text-[10px] md:text-xs uppercase tracking-[0.4em] text-brand-subtext font-bold"
                   >
                     Featured {currentHero?.category === 'Apparel' ? 'Apparel' : 'Fragrance'}
                   </motion.p>
-                  <h1 className="text-5xl sm:text-6xl md:text-8xl font-serif leading-[1.1] text-brand-text tracking-tight">
+                  <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif leading-[1.1] text-brand-text tracking-tight">
                     {currentHero?.name?.split(' ')[0] || 'AH'} <br />
                     <span className="italic">{currentHero?.name?.split(' ').slice(1).join(' ') || 'Signature'}</span>
                   </h1>
@@ -128,32 +178,51 @@ const Home = () => {
           </div>
 
           <div className="flex flex-col items-center space-y-8 order-1 md:order-2">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={currentHero?.id}
-                initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 1.1, rotate: 5 }}
-                transition={{ duration: 1 }}
-                className="relative h-full flex justify-center items-center"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={1}
+                onDragEnd={(e, { offset, velocity }) => {
+                  const swipe = swipePower(offset.x, velocity.x);
+
+                  if (swipe < -swipeConfidenceThreshold) {
+                    paginate(1);
+                  } else if (swipe > swipeConfidenceThreshold) {
+                    paginate(-1);
+                  }
+                }}
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.4 }
+                }}
+                className="relative h-full flex justify-center items-center cursor-grab active:cursor-grabbing"
               >
                 <div className="absolute inset-0 bg-brand-accent/30 rounded-full blur-[120px] -z-10 transform scale-75 opacity-40 animate-pulse"></div>
                 <img
-                  src={currentHero?.image || "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=1000"}
+                  src={currentHero?.image || "/images/cedar-mist.png"}
                   alt={currentHero?.name || "Featured Product"}
-                  className="w-full max-w-[280px] md:max-w-md object-contain drop-shadow-[0_45px_45px_rgba(0,0,0,0.15)]"
+                  className="w-full max-w-[280px] md:max-w-md object-contain drop-shadow-[0_45px_45px_rgba(0,0,0,0.15)] pointer-events-none"
                   referrerPolicy="no-referrer"
                 />
               </motion.div>
             </AnimatePresence>
 
             {/* Mobile Buttons */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" custom={direction}>
               <motion.div 
                 key={currentHero?.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
                 className="flex flex-col gap-4 w-full max-w-[280px] md:hidden"
               >
                 <Link
@@ -172,7 +241,10 @@ const Home = () => {
           {displayProducts.map((_, idx) => (
             <button
               key={idx}
-              onClick={() => setCurrentIndex(idx)}
+              onClick={() => {
+                setDirection(idx > currentIndex ? 1 : -1);
+                setCurrentIndex(idx);
+              }}
               className={cn(
                 "h-1 transition-all duration-500 rounded-full",
                 idx === currentIndex ? "w-12 bg-brand-button" : "w-4 bg-brand-button/20"
@@ -195,7 +267,7 @@ const Home = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {displayFragrances.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -207,7 +279,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div className="relative aspect-[4/5] overflow-hidden rounded-3xl shadow-2xl">
             <img
-              src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&q=80&w=1000"
+              src="/images/about-secondary.png"
               alt="Craftsmanship"
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
@@ -234,7 +306,7 @@ const Home = () => {
         <div className="relative bg-brand-button rounded-[32px] md:rounded-[40px] overflow-hidden p-8 md:p-24 text-white">
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-30">
             <img
-              src="https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=1000"
+              src="/images/golden-amber.png"
               alt="Signature"
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"

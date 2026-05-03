@@ -41,13 +41,12 @@ const Login: React.FC = () => {
           uid: user.uid,
           email: user.email,
           displayName: displayName,
-          role: user.email === 'admin286@gmail.com' ? 'admin' : 'user',
+          role: user.email === 'ahattars812@gmail.com' ? 'admin' : 'user',
           createdAt: serverTimestamp(),
         });
       }
-      // Send everyone to Home by default, or back to where they came from
-      const target = (from === '/login' || from === '/orders' || from === '/admin') ? '/' : from;
-      navigate(target, { replace: true });
+      // Always direct to Home page (hero page) after login/signup
+      navigate('/', { replace: true });
     } catch (err: any) {
       let message = 'An error occurred during authentication.';
 

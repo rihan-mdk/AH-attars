@@ -141,7 +141,10 @@ const AdminOrders = () => {
                             className="w-12 h-16 rounded-xl object-cover shadow-sm"
                           />
                           <div className="flex-1">
-                            <h5 className="text-sm font-serif text-brand-text">{item.name}</h5>
+                            <h5 className="text-sm font-serif text-brand-text">
+                              {item.name}
+                              {item.sizeLabel && <span className="ml-2 text-[10px] font-sans text-brand-subtext">({item.sizeLabel})</span>}
+                            </h5>
                             <p className="text-xs text-brand-subtext">Quantity: {item.quantity}</p>
                           </div>
                           <p className="text-sm font-bold text-brand-text">{formatPrice(item.price * item.quantity)}</p>

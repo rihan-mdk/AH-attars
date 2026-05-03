@@ -52,7 +52,7 @@ const MyAddresses = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 md:py-20">
+    <div className="max-w-4xl mx-auto px-4 pt-16 md:pt-20 pb-10 md:pb-20">
       <Link 
         to="/" 
         className="inline-flex items-center space-x-2 text-brand-subtext hover:text-brand-text transition-colors group mb-12"

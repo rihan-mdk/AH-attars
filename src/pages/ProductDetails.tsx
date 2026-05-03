@@ -17,6 +17,7 @@ import {
   Timestamp 
 } from 'firebase/firestore';
 import { useCurrency } from '../CurrencyContext';
+import { cn } from '../lib/utils';
 
 interface Review {
   id: string;
@@ -42,6 +43,14 @@ const ProductDetails = () => {
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string>('3ml');
+  
+  const fragranceSizes = [
+    { id: '3ml', label: '3ml', sub: '1/4 Tola', priceAdd: 0 },
+    { id: '6ml', label: '6ml', sub: '1/2 Tola', priceAdd: 200 },
+    { id: '12ml', label: '12ml', sub: '1 Tola', priceAdd: 400 },
+    { id: '24ml', label: '24ml', sub: '2 Tola', priceAdd: 800 },
+  ];
   
   const product = products.find((p) => p.id === id);
   const [activeImage, setActiveImage] = useState(product?.image || '');
@@ -82,8 +91,18 @@ const ProductDetails = () => {
     );
   }
 
+  const basePrice = product.price || 0;
+  const currentPrice = product.category === 'Fragrance' 
+    ? basePrice + (fragranceSizes.find(s => s.id === selectedSize)?.priceAdd || 0)
+    : basePrice;
+
   const handleAddToCart = () => {
-    addToCart(product, quantity);
+    if (product.category === 'Apparel') {
+      addToCart(product, quantity);
+    } else {
+      const sizeLabel = fragranceSizes.find(s => s.id === selectedSize)?.label;
+      addToCart(product, quantity, selectedSize, sizeLabel, currentPrice);
+    }
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -119,7 +138,7 @@ const ProductDetails = () => {
     : null;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 md:py-24">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 md:pt-20 pb-12 md:pb-20">
       <button
         onClick={() => navigate(-1)}
         className="flex items-center space-x-2 text-brand-subtext hover:text-brand-text transition-colors mb-12"
@@ -185,7 +204,7 @@ const ProductDetails = () => {
             <p className="text-xs uppercase tracking-[0.3em] text-brand-subtext font-bold">{product.category}</p>
             <h1 className="text-5xl md:text-6xl font-serif text-brand-text leading-tight">{product.name}</h1>
             <div className="flex items-center space-x-4">
-              <p className="text-3xl font-light text-brand-text">{formatPrice(product.price)}</p>
+              <p className="text-3xl font-light text-brand-text">{formatPrice(currentPrice)}</p>
               {averageRating && (
                 <div className="flex items-center space-x-1 bg-brand-accent/10 px-3 py-1 rounded-full">
                   <Star size={14} className="fill-brand-button text-brand-button" />
@@ -212,7 +231,33 @@ const ProductDetails = () => {
             </div>
           )}
 
-          {product.sizes && product.sizes.length > 0 && (
+          {product.category !== 'Apparel' && (
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-brand-text">Select Size</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {fragranceSizes.map((size) => (
+                  <button 
+                    key={size.id}
+                    onClick={() => setSelectedSize(size.id)}
+                    className={cn(
+                      "flex flex-col items-center justify-center py-3 px-4 rounded-2xl border transition-all",
+                      selectedSize === size.id 
+                        ? "bg-brand-button text-white border-brand-button shadow-md scale-[1.02]" 
+                        : "bg-white text-brand-text border-brand-accent/20 hover:border-brand-accent"
+                    )}
+                  >
+                    <span className="text-sm font-bold">{size.label}</span>
+                    <span className={cn(
+                      "text-[9px] uppercase tracking-tighter opacity-70",
+                      selectedSize === size.id ? "text-white" : "text-brand-subtext"
+                    )}>{size.sub}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {product.category === 'Apparel' && product.sizes && product.sizes.length > 0 && (
             <div className="space-y-4">
               <h4 className="text-sm font-bold uppercase tracking-widest text-brand-text">Available Sizes</h4>
               <div className="flex flex-wrap gap-3">

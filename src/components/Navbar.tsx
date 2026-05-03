@@ -27,9 +27,12 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      // Use requestAnimationFrame for smoother performance
+      requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 20);
+      });
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -151,9 +154,10 @@ const Navbar = () => {
   const handleLinkHover = (path: string) => {
     if (location.pathname === path) return;
     clearHover();
+    // 400ms delay for a more intentional, premium feel
     hoverTimeoutRef.current = setTimeout(() => {
       navigate(path);
-    }, 300);
+    }, 400);
   };
 
   const clearHover = () => {
@@ -178,21 +182,22 @@ const Navbar = () => {
     { name: 'Wishlist', path: '/wishlist' },
   ].filter(link => !isAdmin || link.name !== 'Profile');
 
-  const mobileLinks = user ? [...navigationLinks, ...accountLinks] : navigationLinks;
+  const mobileLinks = (user ? [...navigationLinks, ...accountLinks] : navigationLinks)
+    .filter(link => !['Home', 'Fragrance', 'Apparel', 'Profile'].includes(link.name));
   const allLinks = [...navigationLinks, ...accountLinks];
 
   return (
     <>
-      <nav className={cn(
-        "sticky top-0 z-50 transition-all duration-500",
+    <nav className={cn(
+        "sticky top-0 z-50 transition-all duration-500 pt-[env(safe-area-inset-top)]",
         scrolled
-          ? "bg-[#F5EFE6]/80 backdrop-blur-xl border-b border-[#D8C7B0]/30 shadow-[0_4px_30px_rgba(0,0,0,0.03)]"
+          ? "bg-[#F5EFE6]/80 backdrop-blur-md border-b border-[#D8C7B0]/30 shadow-[0_4px_30px_rgba(0,0,0,0.03)]"
           : "bg-[#F5EFE6] border-b border-[#D8C7B0]/20"
       )}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={cn(
             "grid grid-cols-3 items-center transition-all duration-500",
-            scrolled ? "h-16" : "h-20 sm:h-24 md:h-28"
+            scrolled ? "h-14" : "h-16 sm:h-20 md:h-24"
           )}>
             {/* Mobile Menu Button */}
             <div className="flex items-center md:hidden justify-start relative z-20">
@@ -209,63 +214,14 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center justify-start space-x-4 lg:space-x-6">
-              <div
-                className="relative"
-                ref={navMenuRef}
-                onMouseEnter={() => setIsNavMenuOpen(true)}
-                onMouseLeave={() => setIsNavMenuOpen(false)}
-              >
-                <button
-                  onClick={() => setIsNavMenuOpen(!isNavMenuOpen)}
-                  className="text-brand-text hover:text-brand-subtext transition-colors p-1"
-                  aria-label="Account menu"
-                >
-                  <Menu size={20} />
-                </button>
-                <AnimatePresence>
-                  {isNavMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full left-0 mt-4 w-48 bg-white shadow-2xl rounded-2xl overflow-hidden border border-brand-accent/10 z-50"
-                    >
-                      <div className="p-2">
-                        {user ? (
-                          accountLinks.map((link) => (
-                            <Link
-                              key={link.path}
-                              to={link.path}
-                              onClick={() => setIsNavMenuOpen(false)}
-                              className={cn(
-                                "block px-4 py-3 text-xs uppercase tracking-widest hover:bg-brand-bg transition-colors rounded-xl",
-                                location.pathname === link.path ? "text-brand-text font-bold" : "text-brand-text/70"
-                              )}
-                            >
-                              {link.name}
-                            </Link>
-                          ))
-                        ) : (
-                          <Link
-                            to="/login"
-                            onClick={() => setIsNavMenuOpen(false)}
-                            className="block px-4 py-3 text-xs uppercase tracking-widest hover:bg-brand-bg transition-colors rounded-xl text-brand-text/70"
-                          >
-                            Login
-                          </Link>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+            <div className="hidden md:flex items-center justify-start space-x-8 lg:space-x-12 relative z-30">
               {navigationLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
                   onMouseEnter={() => handleLinkHover(link.path)}
                   onMouseLeave={clearHover}
+                  onClick={clearHover}
                   className={cn(
                     "text-[11px] uppercase tracking-widest hover:text-brand-subtext transition-colors whitespace-nowrap",
                     location.pathname === link.path ? "font-bold border-b border-brand-text" : "text-brand-text/70"
@@ -277,12 +233,17 @@ const Navbar = () => {
             </div>
 
             {/* Logo */}
-            <Link to="/" className="flex-shrink-0 flex justify-center items-center z-10 px-2">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-serif tracking-tighter text-[#2C2C2C] whitespace-nowrap">AH attars</h1>
+            <Link to="/" className="flex-shrink-0 flex justify-center items-center z-10 px-1 sm:px-2">
+              <img 
+                src="/images/ahlogo.svg" 
+                alt="AH" 
+                className="h-8 sm:h-10 md:h-12 w-auto object-contain" 
+                referrerPolicy="no-referrer"
+              />
             </Link>
 
             {/* Desktop Navigation Right */}
-            <div className="hidden md:flex items-center justify-end space-x-6 lg:space-x-8">
+            <div className="hidden md:flex items-center justify-end space-x-8 lg:space-x-10">
               {/* Search, Wishlist, Cart, Account */}
               <div className="relative flex items-center" ref={searchRef}>
                 <AnimatePresence>
@@ -373,22 +334,17 @@ const Navbar = () => {
               </Link>
 
               {/* User Account Menu */}
-              <div
-                className="relative"
-                ref={accountMenuRef}
-                onMouseEnter={() => user && setIsAccountOpen(true)}
-                onMouseLeave={() => setIsAccountOpen(false)}
-              >
+              <div className="relative" ref={accountMenuRef}>
                 {user ? (
-                  <button
-                    onClick={() => setIsAccountOpen(!isAccountOpen)}
+                  <Link
+                    to="/profile"
                     className="flex items-center space-x-2 text-[#2C2C2C] hover:text-[#6F6A63] transition-colors p-2"
                   >
                     <User size={20} />
                     <span className="text-xs uppercase tracking-widest hidden lg:inline-block max-w-[80px] lg:max-w-[120px] truncate">
                       {(profile?.displayName || user.displayName || user.email?.split('@')[0])?.split(' ')[0]}
                     </span>
-                  </button>
+                  </Link>
                 ) : (
                   <Link
                     to="/login"
@@ -398,86 +354,9 @@ const Navbar = () => {
                   </Link>
                 )}
 
-                <AnimatePresence>
-                  {isAccountOpen && user && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-2 w-48 bg-white shadow-2xl rounded-2xl overflow-hidden border border-[#D8C7B0]/20 z-50"
-                    >
-                      <div className="p-4 border-b border-[#D8C7B0]/10">
-                        <p className="text-xs font-bold text-[#2C2C2C] truncate">{profile?.displayName || user.displayName}</p>
-                        <p className="text-[10px] text-[#6F6A63] truncate">{user.email}</p>
-                      </div>
-                      <div className="p-2">
-                        {isAdmin && (
-                          <Link
-                            to="/admin"
-                            onClick={() => setIsAccountOpen(false)}
-                            className="flex items-center space-x-3 px-3 py-2 text-xs text-[#2C2C2C] hover:bg-[#F5EFE6] rounded-lg transition-colors"
-                          >
-                            <Settings size={14} />
-                            <span>Admin Panel</span>
-                          </Link>
-                        )}
 
-                        <button
-                          onClick={() => {
-                            handleSignOut();
-                            setIsAccountOpen(false);
-                          }}
-                          className="w-full flex items-center space-x-3 px-3 py-2 text-xs text-red-500 hover:bg-red-50 rounded-lg transition-colors text-left"
-                        >
-                          <LogOut size={14} />
-                          <span>Sign Out</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
 
-              {/* Currency Switcher (Desktop) */}
-              <div className="relative hidden lg:block" ref={currencyRef}>
-                <button
-                  onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
-                  className="flex items-center space-x-1.5 text-[#2C2C2C] hover:text-[#6F6A63] transition-colors p-2 text-[10px] font-bold uppercase tracking-widest border border-brand-accent/20 rounded-full px-3"
-                >
-                  <span>{currency.code}</span>
-                  <ChevronDown size={12} className={cn("transition-transform duration-300", isCurrencyOpen && "rotate-180")} />
-                </button>
-
-                <AnimatePresence>
-                  {isCurrencyOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-2 w-32 bg-white shadow-2xl rounded-2xl overflow-hidden border border-[#D8C7B0]/20 z-50"
-                    >
-                      <div className="p-1">
-                        {allCurrencies.map((c) => (
-                          <button
-                            key={c.code}
-                            onClick={() => {
-                              setCurrency(c.code as CurrencyCode);
-                              setIsCurrencyOpen(false);
-                            }}
-                            className={cn(
-                              "w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-colors",
-                              currency.code === c.code ? "bg-brand-accent/20 text-brand-text" : "text-brand-text/60 hover:bg-brand-bg"
-                            )}
-                          >
-                            <span>{c.code}</span>
-                            <span className="text-brand-subtext">{c.symbol}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
             </div>
 
             {/* Mobile Icons */}
@@ -493,7 +372,7 @@ const Navbar = () => {
               >
                 {showSearch ? <X size={20} /> : <Search size={20} />}
               </button>
-              <Link to="/wishlist" className="relative text-[#2C2C2C] p-1.5 transition-opacity hover:opacity-70" aria-label="Wishlist">
+              <Link to="/wishlist" className="hidden sm:inline-flex relative text-[#2C2C2C] p-1.5 transition-opacity hover:opacity-70" aria-label="Wishlist">
                 <Heart size={20} className={wishlist.length > 0 ? "fill-brand-button text-brand-button" : ""} />
                 {wishlist.length > 0 && (
                   <span className="absolute top-0 right-0 bg-brand-button text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
@@ -666,23 +545,12 @@ const Navbar = () => {
             >
               <div className="p-6 flex justify-between items-center border-b border-brand-accent/20 bg-[#F5EFE6] shrink-0">
                 <div className="flex items-center space-x-3">
-                  <h2 className="text-2xl font-serif tracking-tighter text-[#2C2C2C]">AH attars</h2>
-                  <div className="flex space-x-1">
-                    {allCurrencies.map((c) => (
-                      <button
-                        key={c.code}
-                        onClick={() => setCurrency(c.code as CurrencyCode)}
-                        className={cn(
-                          "px-2 py-1 text-[9px] font-bold rounded-md border transition-all",
-                          currency.code === c.code
-                            ? "bg-brand-button text-white border-brand-button"
-                            : "border-brand-accent/30 text-brand-text/50"
-                        )}
-                      >
-                        {c.code}
-                      </button>
-                    ))}
-                  </div>
+                  <img 
+                    src="/images/ahlogo.svg" 
+                    alt="AH" 
+                    className="h-10 w-auto object-contain" 
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
@@ -744,7 +612,33 @@ const Navbar = () => {
                 </div>
               </div>
 
-              <div className="p-8 border-t border-brand-accent/20 bg-[#F5EFE6] shrink-0">
+              {/* Mobile Currency Switcher at Bottom */}
+              <div className="p-8 border-t border-brand-accent/10 bg-brand-bg/30 shrink-0">
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-subtext">Region & Currency</span>
+                    <Globe size={14} className="text-brand-subtext/50" />
+                  </div>
+                  <div className="flex bg-white rounded-xl p-1 border border-brand-accent/20 shadow-sm overflow-hidden">
+                    {allCurrencies.map((c) => (
+                      <button
+                        key={c.code}
+                        onClick={() => setCurrency(c.code as CurrencyCode)}
+                        className={cn(
+                          "flex-1 py-2 text-[10px] font-bold rounded-lg transition-all duration-300",
+                          currency.code === c.code
+                            ? "bg-brand-button text-white shadow-md"
+                            : "text-brand-text/40 hover:text-brand-text hover:bg-brand-bg/50"
+                        )}
+                      >
+                        {c.code}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-brand-accent/20 bg-[#F5EFE6] shrink-0">
                 <p className="text-[10px] text-brand-subtext text-center uppercase tracking-[0.2em]">
                   © 2026 AH attars
                 </p>

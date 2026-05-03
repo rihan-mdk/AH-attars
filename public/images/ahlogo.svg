@@ -1,0 +1,21 @@
+<svg width="240" height="200" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400&amp;display=swap');
+      .logo-text {
+        font-family: 'Playfair Display', serif;
+        fill: #2C2C2C;
+        text-transform: uppercase;
+      }
+    </style>
+  </defs>
+  
+  {/* The 'A' - using regular weight (400) for a lighter, more elegant feel */}
+  <text x="50" y="145" class="logo-text" font-size="140" font-weight="400" style="letter-spacing: -8px;">A</text>
+  
+  {/* The 'H' - slightly overlapped for the stylish monogram effect */}
+  <text x="110" y="145" class="logo-text" font-size="140" font-weight="400" style="opacity: 0.85;">H</text>
+  
+  {/* A very subtle thin line underneath to ground the monogram */}
+  <rect x="75" y="155" width="90" height="1" fill="#2C2C2C" opacity="0.2" />
+</svg>

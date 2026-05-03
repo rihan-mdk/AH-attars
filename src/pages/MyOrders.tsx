@@ -1,8 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useOrders } from '../OrderContext';
 import { motion } from 'motion/react';
-import { Package, ChevronRight, Calendar, MapPin, ShoppingBag } from 'lucide-react';
+import { Package, ChevronRight, Calendar, MapPin, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useCurrency } from '../CurrencyContext';
 import { useAuth } from '../AuthContext';
 
@@ -10,49 +10,53 @@ const MyOrders = () => {
   const { orders } = useOrders();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const BackButton = () => (
+    <button
+      onClick={() => navigate(-1)}
+      className="inline-flex items-center space-x-2 text-brand-subtext hover:text-brand-text transition-colors mb-12 group"
+    >
+      <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+      <span className="text-xs uppercase tracking-widest font-bold">Back</span>
+    </button>
+  );
 
   const myOrders = orders.filter(o => o.userId === user?.uid);
 
   if (myOrders.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-32 text-center space-y-8">
-        <div className="flex justify-center">
-          <div className="bg-brand-accent/20 p-8 rounded-full">
-            <Package size={64} className="text-brand-accent" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 md:pt-20 pb-10 md:pb-20">
+        <BackButton />
+        <div className="text-center py-20 space-y-8">
+          <div className="flex justify-center">
+            <div className="bg-brand-accent/20 p-8 rounded-full">
+              <Package size={64} className="text-brand-accent" />
+            </div>
           </div>
+          <div className="space-y-4">
+            <h1 className="text-4xl font-serif text-brand-text">No orders yet</h1>
+            <p className="text-brand-subtext max-w-md mx-auto">
+              You haven't placed any orders yet. Start exploring our collection to find your signature scent.
+            </p>
+          </div>
+          <Link
+            to="/fragrances"
+            className="inline-block bg-brand-button text-white px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase hover:bg-black transition-all"
+          >
+            Explore Fragrances
+          </Link>
         </div>
-        <div className="space-y-4">
-          <h1 className="text-4xl font-serif text-brand-text">No orders yet</h1>
-          <p className="text-brand-subtext max-w-md mx-auto">
-            You haven't placed any orders yet. Start exploring our collection to find your signature scent.
-          </p>
-        </div>
-        <Link
-          to="/fragrances"
-          className="inline-block bg-brand-button text-white px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase hover:bg-black transition-all"
-        >
-          Explore Fragrances
-        </Link>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20">
-      <div className="mb-12 space-y-8">
-        <Link 
-          to="/" 
-          className="inline-flex items-center space-x-2 text-brand-subtext hover:text-brand-text transition-colors group"
-        >
-          <div className="bg-white p-2 rounded-full shadow-sm group-hover:bg-brand-accent/10 transition-colors">
-            <ChevronRight className="rotate-180" size={18} />
-          </div>
-          <span className="text-[10px] font-bold uppercase tracking-widest">Back to Gallery</span>
-        </Link>
-        <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.3em] text-brand-subtext font-bold">Account</p>
-          <h1 className="text-5xl font-serif text-brand-text">My Orders</h1>
-        </div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 md:pt-20 pb-10 md:pb-20">
+      <BackButton />
+      <div className="mb-12 space-y-4">
+        <p className="text-xs uppercase tracking-[0.3em] text-brand-subtext font-bold">Account</p>
+        <h1 className="text-5xl font-serif text-brand-text">My Orders</h1>
       </div>
 
       <div className="space-y-8">

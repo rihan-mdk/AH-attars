@@ -41,8 +41,28 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       
       // Use database data as the single source of truth.
+      // Auto-patch legacy Unsplash URLs to new local premium assets
+      const patchedProductsData = productsData.map(product => {
+        if (product.image && typeof product.image === 'string' && product.image.includes('unsplash.com') && product.name) {
+          const name = product.name.toLowerCase();
+          if (name.includes('velvet rose')) return { ...product, image: '/images/velvet-rose.png' };
+          if (name.includes('golden amber')) return { ...product, image: '/images/golden-amber.png' };
+          if (name.includes('cedar mist')) return { ...product, image: '/images/cedar-mist.png' };
+          if (name.includes('citrus bloom')) return { ...product, image: '/images/citrus-bloom.png' };
+          if (name.includes('midnight jasmine')) return { ...product, image: '/images/midnight-jasmine.png' };
+          if (name.includes('sandalwood soul')) return { ...product, image: '/images/sandalwood-soul.png' };
+          if (name.includes('oceanic drift')) return { ...product, image: '/images/oceanic-drift.png' };
+          if (name.includes('spiced saffron')) return { ...product, image: '/images/spiced-saffron.png' };
+          if (name.includes('white musk')) return { ...product, image: '/images/white-musk.png' };
+          if (name.includes('smoky vetiver')) return { ...product, image: '/images/smoky-vetiver.png' };
+          if (name.includes('bergamot breeze')) return { ...product, image: '/images/bergamot-breeze.png' };
+          if (name.includes('patchouli night')) return { ...product, image: '/images/patchouli-night.png' };
+        }
+        return product;
+      });
+
       // Only fall back to INITIAL_PRODUCTS if the database is completely empty.
-      const finalProducts = productsData.length > 0 ? [...productsData] : [...INITIAL_PRODUCTS];
+      const finalProducts = patchedProductsData.length > 0 ? [...patchedProductsData] : [...INITIAL_PRODUCTS];
       
       // Sort products: Featured first, then by name
       finalProducts.sort((a, b) => {
@@ -57,7 +77,7 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.log(`Loaded ${finalProducts.length} products (${productsData.length} from DB)`);
       
       // If database is completely empty and user is admin, seed initial products
-      if (!isSeeding.current && productsData.length === 0 && auth.currentUser?.email === 'admin286@gmail.com') {
+      if (!isSeeding.current && productsData.length === 0 && auth.currentUser?.email === 'ahattars812@gmail.com') {
         seedInitialProducts();
       }
     }, (error) => {
@@ -71,7 +91,7 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const seedInitialProducts = async () => {
     // Only attempt to seed if the current user is the designated admin
-    if (auth.currentUser?.email !== 'admin286@gmail.com' || isSeeding.current) {
+    if (auth.currentUser?.email !== 'ahattars812@gmail.com' || isSeeding.current) {
       return;
     }
 

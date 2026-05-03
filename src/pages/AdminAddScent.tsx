@@ -288,8 +288,11 @@ const AdminAddScent = () => {
               <button
                 type="button"
                 onClick={addImageEntry}
-                disabled={imageEntries.length >= 4}
-                className="flex items-center space-x-2 text-brand-accent hover:text-brand-text transition-colors disabled:opacity-50"
+                disabled={imageEntries.length >= (productType === 'Fragrance' ? 1 : 4)}
+                className={cn(
+                  "flex items-center space-x-2 text-brand-accent hover:text-brand-text transition-colors disabled:opacity-0 pointer-events-auto",
+                  productType === 'Fragrance' && "hidden"
+                )}
               >
                 <Plus size={16} />
                 <span className="text-[10px] uppercase tracking-widest font-bold">Add Image</span>
