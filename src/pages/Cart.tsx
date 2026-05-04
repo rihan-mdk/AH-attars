@@ -5,7 +5,7 @@ import { useAddresses } from '../AddressContext';
 import { useOrders } from '../OrderContext';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trash2, Minus, Plus, ArrowRight, ShoppingBag, MapPin, ChevronDown, Loader2, ShieldCheck, CreditCard, Wallet } from 'lucide-react';
+import { Trash2, Minus, Plus, ArrowRight, ShoppingBag, MapPin, ChevronDown, Loader2, ShieldCheck, CreditCard, Wallet, CheckCircle2 } from 'lucide-react';
 import { useCurrency } from '../CurrencyContext';
 import { useAuth } from '../AuthContext';
 import { ArrowLeft } from 'lucide-react';
@@ -36,6 +36,15 @@ const Cart = () => {
         city: defaultAddr.city,
         state: defaultAddr.state,
         zipCode: defaultAddr.zipCode
+      });
+    } else {
+      // Reset if no saved addresses found (new user/guest)
+      setShippingAddress({
+        name: '',
+        street: '',
+        city: '',
+        state: '',
+        zipCode: ''
       });
     }
   }, [addresses]);
@@ -250,121 +259,153 @@ const Cart = () => {
           <div className="space-y-4 pt-4 border-t border-brand-accent/30">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-serif text-brand-text">Shipping Address</h3>
-              {addresses.length > 0 && (
+              {(addresses.length > 0 || shippingAddress.name) && (
                 <button 
                   onClick={() => setShowAddressSelector(!showAddressSelector)}
                   className="text-[10px] font-bold uppercase tracking-widest text-brand-accent flex items-center space-x-1"
                 >
-                  <span>Change</span>
+                  <span>{showAddressSelector ? "Cancel" : addresses.length > 0 ? "Change" : "Edit"}</span>
                   <ChevronDown size={12} className={cn("transition-transform", showAddressSelector && "rotate-180")} />
                 </button>
               )}
             </div>
 
-            {/* Address Selector Dropdown */}
-            <AnimatePresence>
-              {showAddressSelector && addresses.length > 0 && (
+            {/* Address Selection/Addition UI */}
+            <AnimatePresence mode="wait">
+              {(!shippingAddress.name && !showAddressSelector) ? (
+                <motion.button
+                  key="add-btn"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  onClick={() => setShowAddressSelector(true)}
+                  className="w-full py-8 border-2 border-dashed border-brand-accent/20 rounded-[32px] flex flex-col items-center justify-center space-y-3 group hover:border-brand-accent/40 transition-all bg-white/20 hover:bg-white/40"
+                >
+                  <div className="p-4 bg-brand-accent/10 rounded-full group-hover:bg-brand-accent/20 transition-colors">
+                    <MapPin size={24} className="text-brand-accent" />
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-[11px] font-bold uppercase tracking-[0.2em] text-brand-text">Add Shipping Address</span>
+                    <span className="text-[10px] text-brand-subtext mt-1 block">Required to calculate shipping</span>
+                  </div>
+                </motion.button>
+              ) : showAddressSelector ? (
                 <motion.div
+                  key="selector"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
+                  className="space-y-4 overflow-hidden"
                 >
-                  <div className="space-y-2 mb-4">
-                    {addresses.map((addr) => (
-                      <button
-                        key={addr.id}
-                        onClick={() => {
-                          setShippingAddress({
-                            name: addr.name,
-                            street: addr.street,
-                            city: addr.city,
-                            state: addr.state,
-                            zipCode: addr.zipCode
-                          });
-                          setShowAddressSelector(false);
-                        }}
-                        className="w-full text-left p-4 rounded-2xl border border-brand-accent/10 hover:border-brand-accent/30 bg-white/30 transition-all text-xs"
-                      >
-                        <p className="font-bold text-brand-text">{addr.name}</p>
-                        <p className="text-brand-subtext">{addr.street}, {addr.city}</p>
-                      </button>
-                    ))}
-                    <Link 
-                      to="/addresses"
-                      className="block text-center p-3 rounded-2xl border border-dashed border-brand-accent/30 text-[10px] font-bold uppercase tracking-widest text-brand-subtext hover:text-brand-text transition-all"
+                  {/* Saved Addresses List */}
+                  {addresses.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[9px] uppercase tracking-widest text-brand-subtext font-bold ml-1">Your Saved Addresses</p>
+                      {addresses.map((addr) => (
+                        <button
+                          key={addr.id}
+                          onClick={() => {
+                            setShippingAddress({
+                              name: addr.name,
+                              street: addr.street,
+                              city: addr.city,
+                              state: addr.state,
+                              zipCode: addr.zipCode
+                            });
+                            setShowAddressSelector(false);
+                          }}
+                          className="w-full text-left p-4 rounded-2xl border border-brand-accent/10 hover:border-brand-accent/40 bg-white/50 transition-all text-xs group"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                              <p className="font-bold text-brand-text">{addr.name}</p>
+                              <p className="text-brand-subtext leading-relaxed">{addr.street}, {addr.city}</p>
+                            </div>
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                              <CheckCircle2 size={16} className="text-brand-accent" />
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Manual Entry Form */}
+                  <div className="space-y-3 bg-white/60 p-6 rounded-[32px] border border-brand-accent/10 shadow-sm">
+                    <p className="text-[9px] uppercase tracking-widest text-brand-subtext font-bold mb-2">New Address Details</p>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Full Name"
+                      className="w-full bg-white/80 border border-brand-accent/20 rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-brand-accent outline-none transition-all"
+                      value={shippingAddress.name}
+                      onChange={handleInputChange}
+                    />
+                    <input
+                      type="text"
+                      name="street"
+                      placeholder="Street Address"
+                      className="w-full bg-white/80 border border-brand-accent/20 rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-brand-accent outline-none transition-all"
+                      value={shippingAddress.street}
+                      onChange={handleInputChange}
+                    />
+                    <input
+                      type="text"
+                      name="city"
+                      placeholder="City"
+                      className="w-full bg-white/80 border border-brand-accent/20 rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-brand-accent outline-none transition-all"
+                      value={shippingAddress.city}
+                      onChange={handleInputChange}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        name="state"
+                        placeholder="State"
+                        className="w-full bg-white/80 border border-brand-accent/20 rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-brand-accent outline-none transition-all"
+                        value={shippingAddress.state}
+                        onChange={handleInputChange}
+                      />
+                      <input
+                        type="text"
+                        name="zipCode"
+                        placeholder="ZIP Code"
+                        className="w-full bg-white/80 border border-brand-accent/20 rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-brand-accent outline-none transition-all"
+                        value={shippingAddress.zipCode}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <button 
+                      onClick={() => setShowAddressSelector(false)}
+                      disabled={!shippingAddress.name || !shippingAddress.street || !shippingAddress.city}
+                      className="w-full py-4 bg-brand-text text-white rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-md disabled:opacity-50 hover:bg-black transition-colors mt-2"
                     >
-                      Manage Addresses
-                    </Link>
+                      Confirm Shipping Details
+                    </button>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="summary"
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-6 rounded-[32px] bg-white/60 border border-brand-accent/20 shadow-sm"
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className="p-3 bg-brand-accent/10 rounded-full">
+                      <MapPin size={18} className="text-brand-accent" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-brand-text">{shippingAddress.name}</p>
+                      <p className="text-xs text-brand-subtext leading-relaxed font-medium">
+                        {shippingAddress.street}<br />
+                        {shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}
+                      </p>
+                    </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {addresses.length === 0 ? (
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Full Name"
-                  className="w-full bg-white/50 border border-brand-accent/20 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand-accent outline-none transition-all"
-                  value={shippingAddress.name}
-                  onChange={handleInputChange}
-                  required
-                />
-                <input
-                  type="text"
-                  name="street"
-                  placeholder="Street Address"
-                  className="w-full bg-white/50 border border-brand-accent/20 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand-accent outline-none transition-all"
-                  value={shippingAddress.street}
-                  onChange={handleInputChange}
-                  required
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    name="city"
-                    placeholder="City"
-                    className="w-full bg-white/50 border border-brand-accent/20 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand-accent outline-none transition-all"
-                    value={shippingAddress.city}
-                    onChange={handleInputChange}
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="state"
-                    placeholder="State"
-                    className="w-full bg-white/50 border border-brand-accent/20 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand-accent outline-none transition-all"
-                    value={shippingAddress.state}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <input
-                  type="text"
-                  name="zipCode"
-                  placeholder="ZIP Code"
-                  className="w-full bg-white/50 border border-brand-accent/20 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand-accent outline-none transition-all"
-                  value={shippingAddress.zipCode}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            ) : (
-              <div className="p-6 rounded-3xl bg-white/30 border border-brand-accent/10 space-y-2">
-                <div className="flex items-start space-x-3">
-                  <MapPin size={16} className="text-brand-accent mt-1" />
-                  <div>
-                    <p className="text-sm font-bold text-brand-text">{shippingAddress.name}</p>
-                    <p className="text-xs text-brand-subtext leading-relaxed">
-                      {shippingAddress.street}<br />
-                      {shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           <button 

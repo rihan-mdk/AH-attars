@@ -54,6 +54,8 @@ const AdminManageScents = () => {
       material: product.material || '',
       selectedSizes: product.sizes || [],
       featured: !!product.featured,
+      variantType: product.variantType || (product.category === 'Apparel' ? 'Size' : 'Thola'),
+      variants: product.variants || [],
     });
     
     // Initialize image entries from product.images or product.image
@@ -265,6 +267,14 @@ const AdminManageScents = () => {
                       updatedData.notes = editFormData.notes.split(',').map((n: string) => n.trim()).filter((n: string) => n !== '');
                     }
 
+                    // Add variant data if present
+                    if (editFormData.variants && editFormData.variants.length > 0) {
+                      updatedData.variantType = editFormData.variantType;
+                      updatedData.variants = editFormData.variants;
+                      // Use the first variant's price as the base price if multiple variants exist
+                      updatedData.price = editFormData.variants[0].price;
+                    }
+
                     await updateProduct(editingProduct.id, updatedData);
                     setEditingProduct(null);
                     setEditFormData(null);
@@ -290,7 +300,7 @@ const AdminManageScents = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest font-bold text-brand-subtext">Price ($)</label>
+                    <label className="text-xs uppercase tracking-widest font-bold text-brand-subtext">Price (₹)</label>
                     <input
                       name="price"
                       type="number"
@@ -369,6 +379,84 @@ const AdminManageScents = () => {
                     />
                   </div>
                 )}
+
+                {/* Variant Pricing Section */}
+                <div className="space-y-4 p-6 bg-brand-bg/20 rounded-[32px] border border-brand-accent/10">
+                  <div className="flex justify-between items-center">
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold text-brand-text">Pricing & Variants</h4>
+                      <p className="text-[10px] text-brand-subtext uppercase tracking-widest">Set different prices for sizes/tholas</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newVariants = [...(editFormData.variants || []), { label: '', price: parseFloat(editFormData.price) }];
+                        setEditFormData({ ...editFormData, variants: newVariants });
+                      }}
+                      className="flex items-center space-x-2 text-brand-accent hover:text-brand-text transition-colors"
+                    >
+                      <Plus size={16} />
+                      <span className="text-[10px] uppercase tracking-widest font-bold">Add Variant</span>
+                    </button>
+                  </div>
+
+                  {editFormData.variants && editFormData.variants.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex space-x-4">
+                        <div className="flex-1">
+                          <label className="text-[9px] uppercase tracking-widest font-bold text-brand-subtext ml-2">Variant Type (e.g. Size)</label>
+                          <input
+                            type="text"
+                            value={editFormData.variantType}
+                            onChange={(e) => setEditFormData({ ...editFormData, variantType: e.target.value })}
+                            className="w-full bg-white/50 border border-brand-accent/10 px-4 py-2 rounded-xl text-xs outline-none"
+                            placeholder="e.g. Size, Thola"
+                          />
+                        </div>
+                      </div>
+                      
+                      {editFormData.variants.map((variant: any, idx: number) => (
+                        <div key={idx} className="flex items-center space-x-3 bg-white/40 p-3 rounded-2xl border border-brand-accent/5">
+                          <input
+                            type="text"
+                            placeholder="Label (3ml)"
+                            value={variant.label}
+                            onChange={(e) => {
+                              const newVariants = [...editFormData.variants];
+                              newVariants[idx].label = e.target.value;
+                              setEditFormData({ ...editFormData, variants: newVariants });
+                            }}
+                            className="flex-1 bg-white border border-brand-accent/10 px-4 py-2 rounded-xl text-xs outline-none"
+                          />
+                          <div className="flex items-center space-x-2 w-32">
+                            <span className="text-xs text-brand-subtext">₹</span>
+                            <input
+                              type="number"
+                              placeholder="Price"
+                              value={variant.price}
+                              onChange={(e) => {
+                                const newVariants = [...editFormData.variants];
+                                newVariants[idx].price = parseFloat(e.target.value);
+                                setEditFormData({ ...editFormData, variants: newVariants });
+                              }}
+                              className="w-full bg-white border border-brand-accent/10 px-4 py-2 rounded-xl text-xs outline-none"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newVariants = editFormData.variants.filter((_: any, i: number) => i !== idx);
+                              setEditFormData({ ...editFormData, variants: newVariants });
+                            }}
+                            className="text-red-400 hover:text-red-600 p-1"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 {/* Image Input Section */}
                 <div className="space-y-4">

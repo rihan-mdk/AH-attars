@@ -28,7 +28,7 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currency, setCurrencyState] = useState<Currency>(() => {
     const saved = localStorage.getItem('aura_currency');
-    return saved && CURRENCIES[saved as CurrencyCode] ? CURRENCIES[saved as CurrencyCode] : CURRENCIES.USD;
+    return saved && CURRENCIES[saved as CurrencyCode] ? CURRENCIES[saved as CurrencyCode] : CURRENCIES.INR;
   });
 
   const setCurrency = (code: CurrencyCode) => {

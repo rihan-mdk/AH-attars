@@ -78,7 +78,7 @@ const Login: React.FC = () => {
       setError('Please enter your email address to reset your password.');
       return;
     }
-    
+
     setLoading(true);
     setError(null);
     try {
@@ -104,7 +104,7 @@ const Login: React.FC = () => {
       >
         <div className="text-center mb-10">
           <h1 className="text-3xl font-serif tracking-tighter text-[#2C2C2C] mb-2">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+            {isLogin ? 'Welcome...' : 'Create Account'}
           </h1>
           <p className="text-[#6F6A63] text-sm">
             {isLogin ? 'Enter your credentials to access your account' : 'Join the AH attars community for a personalized experience'}
@@ -185,7 +185,7 @@ const Login: React.FC = () => {
           </div>
 
           {resetSent && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center space-x-2 text-green-600 text-xs bg-green-50 p-3 rounded-xl border border-green-100"

@@ -43,17 +43,18 @@ const ProductDetails = () => {
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<string>('3ml');
-  
-  const fragranceSizes = [
-    { id: '3ml', label: '3ml', sub: '1/4 Tola', priceAdd: 0 },
-    { id: '6ml', label: '6ml', sub: '1/2 Tola', priceAdd: 200 },
-    { id: '12ml', label: '12ml', sub: '1 Tola', priceAdd: 400 },
-    { id: '24ml', label: '24ml', sub: '2 Tola', priceAdd: 800 },
-  ];
+  const [selectedSize, setSelectedSize] = useState<string>('');
   
   const product = products.find((p) => p.id === id);
   const [activeImage, setActiveImage] = useState(product?.image || '');
+
+  useEffect(() => {
+    if (product?.variants && product.variants.length > 0) {
+      setSelectedSize(product.variants[0].label);
+    } else if (product?.sizes && product.sizes.length > 0) {
+      setSelectedSize(product.sizes[0]);
+    }
+  }, [product]);
 
   useEffect(() => {
     setQuantity(1);
@@ -92,17 +93,12 @@ const ProductDetails = () => {
   }
 
   const basePrice = product.price || 0;
-  const currentPrice = product.category === 'Fragrance' 
-    ? basePrice + (fragranceSizes.find(s => s.id === selectedSize)?.priceAdd || 0)
+  const currentPrice = product.variants && product.variants.length > 0
+    ? (product.variants.find(v => v.label === selectedSize)?.price || product.variants[0].price)
     : basePrice;
 
   const handleAddToCart = () => {
-    if (product.category === 'Apparel') {
-      addToCart(product, quantity);
-    } else {
-      const sizeLabel = fragranceSizes.find(s => s.id === selectedSize)?.label;
-      addToCart(product, quantity, selectedSize, sizeLabel, currentPrice);
-    }
+    addToCart(product, quantity, selectedSize, selectedSize, currentPrice);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -245,40 +241,46 @@ const ProductDetails = () => {
             </div>
           )}
 
-          {product.category !== 'Apparel' && (
+          {/* Variants / Sizes Selection */}
+          {(product.variants && product.variants.length > 0) ? (
             <div className="space-y-4">
-              <h4 className="text-sm font-bold uppercase tracking-widest text-brand-text">Select Size</h4>
+              <h4 className="text-sm font-bold uppercase tracking-widest text-brand-text">
+                Select {product.variantType || 'Option'}
+              </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {fragranceSizes.map((size) => (
-                  <button 
-                    key={size.id}
-                    onClick={() => setSelectedSize(size.id)}
+                {product.variants.map((variant) => (
+                  <button
+                    key={variant.label}
+                    onClick={() => setSelectedSize(variant.label)}
                     className={cn(
-                      "flex flex-col items-center justify-center py-3 px-4 rounded-2xl border transition-all",
-                      selectedSize === size.id 
-                        ? "bg-brand-button text-white border-brand-button shadow-md scale-[1.02]" 
+                      "flex flex-col items-center justify-center py-4 px-4 rounded-2xl border transition-all",
+                      selectedSize === variant.label
+                        ? "bg-brand-button text-white border-brand-button shadow-md scale-[1.02]"
                         : "bg-white text-brand-text border-brand-accent/20 hover:border-brand-accent"
                     )}
                   >
-                    <span className="text-sm font-bold">{size.label}</span>
-                    <span className={cn(
-                      "text-[9px] uppercase tracking-tighter opacity-70",
-                      selectedSize === size.id ? "text-white" : "text-brand-subtext"
-                    )}>{size.sub}</span>
+                    <span className="text-sm font-bold">{variant.label}</span>
+                    <span className="text-[9px] uppercase tracking-tighter opacity-70 mt-1">
+                      {formatPrice(variant.price)}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
-          )}
-
-          {product.category === 'Apparel' && product.sizes && product.sizes.length > 0 && (
+          ) : (product.sizes && product.sizes.length > 0) && (
             <div className="space-y-4">
               <h4 className="text-sm font-bold uppercase tracking-widest text-brand-text">Available Sizes</h4>
               <div className="flex flex-wrap gap-3">
                 {product.sizes.map((size) => (
                   <button 
                     key={size}
-                    className="w-12 h-12 flex items-center justify-center rounded-xl border border-brand-accent/30 hover:border-brand-button transition-colors text-sm font-bold"
+                    onClick={() => setSelectedSize(size)}
+                    className={cn(
+                      "w-12 h-12 flex items-center justify-center rounded-xl border transition-all text-sm font-bold",
+                      selectedSize === size
+                        ? "bg-brand-button text-white border-brand-button shadow-md"
+                        : "border-brand-accent/30 hover:border-brand-button text-brand-text"
+                    )}
                   >
                     {size}
                   </button>

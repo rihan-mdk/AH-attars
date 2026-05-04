@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CartItem, Product } from './constants';
 import { useProducts } from './ProductContext';
+import { useAuth } from './AuthContext';
 
 interface CartContextType {
   cart: CartItem[];
@@ -16,18 +17,28 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { products, loading } = useProducts();
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const savedCart = localStorage.getItem('aura_cart');
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  const { user } = useAuth();
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
+  // Load cart when user changes
   useEffect(() => {
-    localStorage.setItem('aura_cart', JSON.stringify(cart));
-  }, [cart]);
+    const storageKey = user ? `aura_cart_${user.uid}` : 'aura_cart_guest';
+    const saved = localStorage.getItem(storageKey);
+    setCart(saved ? JSON.parse(saved) : []);
+    setIsLoaded(true);
+  }, [user]);
+
+  // Save cart when it changes
+  useEffect(() => {
+    if (!isLoaded) return;
+    const storageKey = user ? `aura_cart_${user.uid}` : 'aura_cart_guest';
+    localStorage.setItem(storageKey, JSON.stringify(cart));
+  }, [cart, user, isLoaded]);
 
   // Cleanup: Remove items from cart if they no longer exist in products list
   useEffect(() => {
-    if (!loading && products.length > 0) {
+    if (!loading && products.length > 0 && isLoaded) {
       setCart(prevCart => {
         const filteredCart = prevCart.filter(item => 
           products.some(p => p.id === item.id)
@@ -38,7 +49,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return prevCart;
       });
     }
-  }, [products, loading]);
+  }, [products, loading, isLoaded]);
 
   const addToCart = (product: Product, quantity: number = 1, selectedSize?: string, sizeLabel?: string, customPrice?: number) => {
     setCart(prevCart => {

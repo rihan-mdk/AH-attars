@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 export interface Address {
   id: string;
@@ -21,14 +22,24 @@ interface AddressContextType {
 const AddressContext = createContext<AddressContextType | undefined>(undefined);
 
 export const AddressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [addresses, setAddresses] = useState<Address[]>(() => {
-    const saved = localStorage.getItem('aura_addresses');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const { user } = useAuth();
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
+  // Load addresses when user changes
   useEffect(() => {
-    localStorage.setItem('aura_addresses', JSON.stringify(addresses));
-  }, [addresses]);
+    const storageKey = user ? `aura_addresses_${user.uid}` : 'aura_addresses_guest';
+    const saved = localStorage.getItem(storageKey);
+    setAddresses(saved ? JSON.parse(saved) : []);
+    setIsLoaded(true);
+  }, [user]);
+
+  // Save addresses when they change
+  useEffect(() => {
+    if (!isLoaded) return;
+    const storageKey = user ? `aura_addresses_${user.uid}` : 'aura_addresses_guest';
+    localStorage.setItem(storageKey, JSON.stringify(addresses));
+  }, [addresses, user, isLoaded]);
 
   const addAddress = (newAddress: Omit<Address, 'id'>) => {
     const addressWithId: Address = {

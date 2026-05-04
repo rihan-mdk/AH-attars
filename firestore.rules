@@ -62,10 +62,8 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() &&
-        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
-          request.auth.uid == "A7SzLUHdxdTYyBhPYbphJezmCe42" ||
-          request.auth.token.email == "admin286@gmail.com");
+        (request.auth.token.email == "ahattars812@gmail.com" ||
+         request.auth.uid == "p8X7MuwVxHcFwkyOhofKTt1D8RS2");
     }
 
     function isValidEmail(email) {
@@ -94,7 +92,7 @@ service cloud.firestore {
 
     function isValidProduct(data) {
       return data.name is string && data.name.size() > 0 &&
-             data.price is number && data.price > 0 &&
+             data.price != null &&
              data.category is string;
     }
 
@@ -105,8 +103,7 @@ service cloud.firestore {
     }
 
     function isValidReview(data) {
-      return hasOnlyAllowedFields(['id', 'productId', 'userId', 'userName', 'rating', 'comment', 'createdAt']) &&
-             data.productId is string &&
+      return data.productId is string &&
              data.userId == request.auth.uid &&
              data.userName is string && data.userName.size() > 0 &&
              data.rating is int && data.rating >= 1 && data.rating <= 5 &&
@@ -119,9 +116,9 @@ service cloud.firestore {
     // ===============================================================
     
     match /orders/{orderId} {
-      allow read: if request.auth != null && (request.auth.token.email == "admin286@gmail.com" || resource.data.userId == request.auth.uid);
+      allow read: if request.auth != null && (isAdmin() || resource.data.userId == request.auth.uid);
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null && request.auth.token.email == "admin286@gmail.com";
+      allow update, delete: if isAdmin();
     }
 
     match /users/{userId} {
@@ -138,14 +135,14 @@ service cloud.firestore {
 
     match /subscribers/{subscriberId} {
       allow read: if isAdmin();
-      allow create: if isValidSubscriber(request.resource.data);
+      allow create: if isValidEmail(request.resource.data.email);
       allow update, delete: if isAdmin();
     }
 
     match /products/{productId}/reviews/{reviewId} {
       allow read: if true;
       allow create: if isAuthenticated() && isValidReview(request.resource.data);
-      allow update, delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+      allow update, delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
     }
   }
 }

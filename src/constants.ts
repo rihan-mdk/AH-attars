@@ -11,6 +11,8 @@ export interface Product {
   sizes?: string[];
   material?: string;
   featured?: boolean;
+  variantType?: string;
+  variants?: { label: string; price: number }[];
 }
 
 export interface CartItem extends Product {
