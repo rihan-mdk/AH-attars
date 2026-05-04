@@ -1,6 +1,3 @@
-<div align="center">
-  <img src=C:\Users\Muhammed Rihan MR\OneDrive\Pictures\Screenshots>
-
   # 🌿AH ATTARS
   **A Premium Olfactory Journey & Minimalist Apparel Experience**
 
