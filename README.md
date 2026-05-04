@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" alt="Aura Fragrances Banner" width="100%" />
+  <img src=C:\Users\Muhammed Rihan MR\OneDrive\Pictures\Screenshots>
 
   # 🌿AH ATTARS
   **A Premium Olfactory Journey & Minimalist Apparel Experience**
