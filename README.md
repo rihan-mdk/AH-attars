@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" alt="Aura Fragrances Banner" width="100%" />
 
-  # 🌿 AURA FRAGRANCES (AH ATTARS)
+  # 🌿AH ATTARS
   **A Premium Olfactory Journey & Minimalist Apparel Experience**
 
   [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
@@ -14,7 +14,7 @@
 
 ## 🏛️ About the Project
 
-**Aura Fragrances** is a high-end e-commerce platform designed for **AH attars**. It bridges the gap between traditional perfumery and modern minimalist fashion. Built with a focus on **visual excellence** and **smooth performance**, the application offers a seamless experience from scent discovery to checkout.
+**AH attars** is a high-end e-commerce platform designed for fragrance lovers. It bridges the gap between traditional perfumery and modern minimalist fashion. Built with a focus on **visual excellence** and **smooth performance**, the application offers a seamless experience from scent discovery to checkout.
 
 ## ✨ Key Features
 
